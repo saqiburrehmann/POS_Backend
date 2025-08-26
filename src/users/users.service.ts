@@ -22,8 +22,17 @@ export class UsersService {
 
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
     try {
-      if (dto.password !== dto.confirmPassword)
+      if (dto.password !== dto.confirmPassword) {
         throw new ConflictException('Passwords do not match');
+      }
+
+      // 🚨 Block signup if an admin already exists
+      const adminExists = await this.userModel
+        .findOne({ role: 'admin' })
+        .lean();
+      if (adminExists) {
+        throw new ConflictException('An admin account already exists');
+      }
 
       const exists = await this.userModel.findOne({ email: dto.email }).lean();
       if (exists) throw new ConflictException('Email already exists');
@@ -31,89 +40,62 @@ export class UsersService {
       const hashed = await bcrypt.hash(dto.password, 10);
       const { confirmPassword, ...data } = dto;
 
-      const user = new this.userModel({ ...data, password: hashed });
-      const saved = await user.save();
+      const user = new this.userModel({
+        ...data,
+        password: hashed,
+        role: 'admin', // always admin
+      });
 
+      const saved = await user.save();
       return new UserResponseDto(saved as UserDocument);
     } catch (err) {
       if (err instanceof HttpException) throw err;
-      console.error(err);
       throw new InternalServerErrorException('Failed to create user');
     }
   }
 
   async findAll(): Promise<UserResponseDto[]> {
-    try {
-      const users = await this.userModel.find().sort({ createdAt: -1 }).lean();
-      return users.map((u) => new UserResponseDto(u as any));
-    } catch (err) {
-      console.error(err);
-      throw new InternalServerErrorException('Failed to fetch users');
-    }
+    const users = await this.userModel.find().sort({ createdAt: -1 }).lean();
+    return users.map((u) => new UserResponseDto(u as any));
   }
 
   async findOne(id: string): Promise<UserResponseDto> {
-    try {
-      const user = await this.userModel.findById(id).lean();
-      if (!user) throw new NotFoundException('User not found');
-      return new UserResponseDto(user as any);
-    } catch (err) {
-      if (err instanceof HttpException) throw err;
-      console.error(err);
-      throw new InternalServerErrorException('Failed to fetch user');
-    }
+    const user = await this.userModel.findById(id).lean();
+    if (!user) throw new NotFoundException('User not found');
+    return new UserResponseDto(user as any);
+  }
+
+  async findByRole(role: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ role }).exec();
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {
-    try {
-      // Include password explicitly
-      return this.userModel.findOne({ email }).select('+password').exec();
-    } catch (err) {
-      console.error(err);
-      return null;
-    }
+    return this.userModel.findOne({ email }).select('+password').exec();
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
-    try {
-      // If password is being updated, require confirmPassword and match
-      const updateData: any = { ...dto };
-      if (dto.password) {
-        if (!dto.confirmPassword || dto.password !== dto.confirmPassword) {
-          throw new BadRequestException(
-            'Password and confirmPassword must match',
-          );
-        }
-        updateData.password = await bcrypt.hash(dto.password, 10);
+    const updateData: any = { ...dto };
+    if (dto.password) {
+      if (!dto.confirmPassword || dto.password !== dto.confirmPassword) {
+        throw new BadRequestException(
+          'Password and confirmPassword must match',
+        );
       }
-
-      // Remove confirmPassword from update
-      delete updateData.confirmPassword;
-
-      const updated = await this.userModel
-        .findByIdAndUpdate(id, updateData, {
-          new: true,
-        })
-        .exec();
-
-      if (!updated) throw new NotFoundException('User not found');
-      return new UserResponseDto(updated as any);
-    } catch (err) {
-      if (err instanceof HttpException) throw err;
-      console.error(err);
-      throw new InternalServerErrorException('Failed to update user');
+      updateData.password = await bcrypt.hash(dto.password, 10);
     }
+
+    delete updateData.confirmPassword;
+
+    const updated = await this.userModel
+      .findByIdAndUpdate(id, updateData, { new: true })
+      .exec();
+    if (!updated) throw new NotFoundException('User not found');
+    return new UserResponseDto(updated as any);
   }
 
   async remove(id: string): Promise<{ message: string }> {
-    try {
-      const deleted = await this.userModel.findByIdAndDelete(id).exec();
-      if (!deleted) throw new NotFoundException('User not found');
-      return { message: `User with ID ${id} deleted successfully` };
-    } catch (err) {
-      if (err instanceof HttpException) throw err;
-      console.error(err);
-      throw new InternalServerErrorException('Failed to delete user');
-    }
+    const deleted = await this.userModel.findByIdAndDelete(id).exec();
+    if (!deleted) throw new NotFoundException('User not found');
+    return { message: `User with ID ${id} deleted successfully` };
   }
 }

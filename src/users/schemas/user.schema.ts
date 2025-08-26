@@ -1,12 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-export type UserDocument = User &
-  Document & {
-    _id: Types.ObjectId;
-    createdAt: Date;
-    updatedAt: Date;
-  };
+export type UserDocument = User & Document & {
+  _id: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 @Schema({ timestamps: true })
 export class User {
@@ -19,7 +18,6 @@ export class User {
   @Prop({ required: true, unique: true })
   email: string;
 
-  // password is excluded by default when querying
   @Prop({ required: true, select: false })
   password: string;
 
