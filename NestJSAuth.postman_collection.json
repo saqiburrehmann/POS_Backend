@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "NestJS Auth & Users API",
-    "_postman_id": "auth-users-api",
-    "description": "Test signup, login, and user operations",
+    "name": "Karyana POS Auth",
+    "_postman_id": "e5c3b42a-0e2f-4f13-8f42-123456789abc",
+    "description": "Postman collection for testing Karyana POS Auth APIs",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -11,146 +11,38 @@
       "request": {
         "method": "POST",
         "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
+          { "key": "Content-Type", "value": "application/json" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123\",\n  \"confirmPassword\": \"Password123\"\n}"
+          "raw": "{\n  \"firstName\": \"Ali\",\n  \"lastName\": \"Khan\",\n  \"email\": \"ali@example.com\",\n  \"password\": \"123456\",\n  \"confirmPassword\": \"123456\"\n}"
         },
-        "url": {
-          "raw": "http://localhost:3000/auth/signup",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3000",
-          "path": ["auth", "signup"]
-        }
-      },
-      "response": []
+        "url": { "raw": "http://localhost:3000/auth/signup", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["auth","signup"] }
+      }
     },
     {
       "name": "Login",
       "request": {
         "method": "POST",
         "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
+          { "key": "Content-Type", "value": "application/json" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123\"\n}"
+          "raw": "{\n  \"email\": \"ali@example.com\",\n  \"password\": \"123456\"\n}"
         },
-        "url": {
-          "raw": "http://localhost:3000/auth/login",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3000",
-          "path": ["auth", "login"]
-        }
-      },
-      "response": []
+        "url": { "raw": "http://localhost:3000/auth/login", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["auth","login"] }
+      }
     },
     {
-      "name": "Get All Users",
+      "name": "Get All Users (protected)",
       "request": {
         "method": "GET",
         "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
+          { "key": "Authorization", "value": "Bearer {{token}}" }
         ],
-        "url": {
-          "raw": "http://localhost:3000/users",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3000",
-          "path": ["users"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get User by ID",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "url": {
-          "raw": "http://localhost:3000/users/{{userId}}",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3000",
-          "path": ["users", "{{userId}}"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Update User",
-      "request": {
-        "method": "PATCH",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          },
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"firstName\": \"Jane\",\n  \"password\": \"NewPass123\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:3000/users/{{userId}}",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3000",
-          "path": ["users", "{{userId}}"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Delete User",
-      "request": {
-        "method": "DELETE",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{accessToken}}"
-          }
-        ],
-        "url": {
-          "raw": "http://localhost:3000/users/{{userId}}",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3000",
-          "path": ["users", "{{userId}}"]
-        }
-      },
-      "response": []
-    }
-  ],
-  "variable": [
-    {
-      "key": "accessToken",
-      "value": ""
-    },
-    {
-      "key": "userId",
-      "value": ""
+        "url": { "raw": "http://localhost:3000/users", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["users"] }
+      }
     }
   ]
 }
