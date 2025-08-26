@@ -1,4 +1,4 @@
-import { IsOptional, IsNumber, Min, IsEnum } from 'class-validator';
+import { IsOptional, IsNumber, Min, IsEnum, IsString } from 'class-validator';
 import { ProductCategory } from '../enums/product-category.enum';
 
 export class UpdateProductDto {
@@ -9,4 +9,5 @@ export class UpdateProductDto {
   @IsOptional() @IsNumber() @Min(0) quantity?: number;
   @IsOptional() @IsNumber() @Min(0) alertQuantity?: number;
   @IsOptional() barcode?: string;
+  @IsOptional() @IsString() ownerId?: string;
 }

@@ -26,4 +26,7 @@ export class CreateProductDto {
 
   @IsOptional()
   barcode?: string;
+
+  @IsNotEmpty()
+  ownerId: string;
 }

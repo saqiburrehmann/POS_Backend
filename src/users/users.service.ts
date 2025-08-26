@@ -13,11 +13,14 @@ import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
+import { Product, ProductDocument } from 'src/product/schemas/product.schema';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(Product.name)
+    private readonly productModel: Model<ProductDocument>,
   ) {}
 
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
@@ -94,8 +97,14 @@ export class UsersService {
   }
 
   async remove(id: string): Promise<{ message: string }> {
-    const deleted = await this.userModel.findByIdAndDelete(id).exec();
-    if (!deleted) throw new NotFoundException('User not found');
-    return { message: `User with ID ${id} deleted successfully` };
+    const user = await this.userModel.findByIdAndDelete(id).exec();
+    if (!user) throw new NotFoundException('User not found');
+
+    // Delete all products owned by this user
+    await this.productModel.deleteMany({ owner: user._id });
+
+    return {
+      message: `User with ID ${id} and their products deleted successfully`,
+    };
   }
 }

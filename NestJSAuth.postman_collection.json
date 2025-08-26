@@ -2,7 +2,7 @@
   "info": {
     "name": "Karyana POS API",
     "_postman_id": "a7f1e3a0-91ab-4c53-8f3c-9abc123456ef",
-    "description": "Postman collection for testing Karyana POS Auth + Users + Products APIs (updated for barcode handling)",
+    "description": "Postman collection for testing Karyana POS Auth + Users + Products APIs (updated for JWT ownerId)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [

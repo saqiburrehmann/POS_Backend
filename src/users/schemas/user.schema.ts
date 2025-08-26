@@ -1,11 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Types, model } from 'mongoose';
 
-export type UserDocument = User & Document & {
-  _id: Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-};
+export type UserDocument = User &
+  Document & {
+    _id: Types.ObjectId;
+    createdAt: Date;
+    updatedAt: Date;
+  };
 
 @Schema({ timestamps: true })
 export class User {

@@ -1,39 +1,27 @@
-import { Expose } from 'class-transformer';
-import { ProductDocument } from '../schemas/product.schema';
+import { Product } from '../schemas/product.schema';
 
 export class ProductResponseDto {
-  @Expose()
   id: string;
-
-  @Expose()
   name: string;
-
-  @Expose()
   category: string;
-
-  @Expose()
-  costPrice: number;
-
-  @Expose()
   sellPrice: number;
-
-  @Expose()
   quantity: number;
-
-  @Expose()
   alertQuantity: number;
-
-  @Expose()
   barcode: string;
+  ownerId: string;
+  ownerName?: string;
 
-  constructor(product: ProductDocument) {
+  constructor(product: Product & { _id: any; owner?: any }) {
     this.id = product._id.toString();
     this.name = product.name;
     this.category = product.category;
-    this.costPrice = product.costPrice;
     this.sellPrice = product.sellPrice;
     this.quantity = product.quantity;
     this.alertQuantity = product.alertQuantity;
     this.barcode = product.barcode;
+    this.ownerId = product.owner?._id?.toString() || product.owner?.toString();
+    if (product.owner?.firstName && product.owner?.lastName) {
+      this.ownerName = `${product.owner.firstName} ${product.owner.lastName}`;
+    }
   }
 }
