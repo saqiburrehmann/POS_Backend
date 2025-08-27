@@ -26,17 +26,10 @@ export class ProductsController {
     @Body() body: Omit<CreateProductDto, 'ownerId'>,
     @Req() req: Request,
   ) {
-    console.log('🚀 Incoming request to create product, JWT user:', req.user);
-
     const userId = req.user?.['id'] || req.user?.['sub'];
-    console.log('🔹 Extracted userId from token:', userId);
-
     if (!userId) {
-      console.error('❌ No userId found in request!');
       throw new UnauthorizedException('Authenticated userId not found');
     }
-
-    console.log('📦 Product body:', body);
     return this.productsService.create({ ...body, ownerId: userId });
   }
 
@@ -47,52 +40,31 @@ export class ProductsController {
     @Body() body: UpdateProductDto,
     @Req() req: Request,
   ) {
-    console.log(
-      '🚀 Incoming request to update product:',
-      id,
-      'JWT user:',
-      req.user,
-    );
-
     const userId = req.user?.['id'] || req.user?.['sub'];
-    console.log('🔹 Extracted userId from token for update:', userId);
-
     return this.productsService.update(id, body, userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll() {
-    console.log('🚀 Fetching all products');
     return this.productsService.findAll();
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    console.log('🚀 Fetching product by ID:', id);
     return this.productsService.findOne(id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string, @Req() req: Request) {
-    console.log(
-      '🚀 Incoming request to delete product:',
-      id,
-      'JWT user:',
-      req.user,
-    );
-
     const userId = req.user?.['id'] || req.user?.['sub'];
-    console.log('🔹 Extracted userId from token for delete:', userId);
-
     return this.productsService.remove(id, userId);
   }
 
   @Get('alerts/low-stock')
   async checkLowStock() {
-    console.log('🚀 Checking low stock products');
     return this.productsService.checkLowStock();
   }
 }
