@@ -2,7 +2,7 @@
   "info": {
     "name": "Karyana POS API",
     "_postman_id": "a7f1e3a0-91ab-4c53-8f3c-9abc123456ef",
-    "description": "Postman collection for testing Karyana POS Auth + Users + Products APIs (updated for JWT ownerId)",
+    "description": "Postman collection for testing Karyana POS Auth + Users + Products APIs (with JWT + Import/Export support)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -89,7 +89,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Sugar\",\n  \"category\": \"Grocery\",\n  \"costPrice\": 80,\n  \"sellPrice\": 100,\n  \"quantity\": 50,\n  \"alertQuantity\": 5\n}"
+              "raw": "{\n  \"name\": \"Sugar\",\n  \"category\": \"Essentials\",\n  \"costPrice\": 80,\n  \"sellPrice\": 100,\n  \"quantity\": 50,\n  \"alertQuantity\": 5\n}"
             },
             "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
           }
@@ -104,7 +104,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Rice\",\n  \"category\": \"Grocery\",\n  \"costPrice\": 120,\n  \"sellPrice\": 150,\n  \"quantity\": 30,\n  \"alertQuantity\": 5,\n  \"barcode\": \"RICE12345\"\n}"
+              "raw": "{\n  \"name\": \"Rice\",\n  \"category\": \"Essentials\",\n  \"costPrice\": 120,\n  \"sellPrice\": 150,\n  \"quantity\": 30,\n  \"alertQuantity\": 5,\n  \"barcode\": \"RICE12345\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
           }
@@ -163,6 +163,50 @@
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": { "raw": "{{baseUrl}}/products/alerts/low-stock", "host": ["{{baseUrl}}"], "path": ["products", "alerts", "low-stock"] }
+          }
+        },
+        {
+          "name": "Restock Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 10\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}/restock", "host": ["{{baseUrl}}"], "path": ["products", "{{productId}}", "restock"] }
+          }
+        },
+        {
+          "name": "Import Stock (Excel/CSV)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/products/import", "host": ["{{baseUrl}}"], "path": ["products", "import"] }
+          }
+        },
+        {
+          "name": "Export Stock (Excel)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+            ],
+            "url": { "raw": "{{baseUrl}}/products/export/excel", "host": ["{{baseUrl}}"], "path": ["products", "export", "excel"] }
           }
         }
       ]

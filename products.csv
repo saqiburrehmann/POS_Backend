@@ -1,0 +1,15 @@
+name,category,costPrice,sellPrice,quantity,barcode
+Sugar,Essentials,80,100,20,SUGAR123
+Rice,Essentials,120,150,10,RICE123
+Tea,Drinks,200,250,15,TEA123
+Chips,Snacks,50,80,30,CHIPS123
+Oil,Essentials,300,350,25,OIL123
+Lays,Snacks,70,100,50,LAYS123
+Mango,Essentials,100,150,40,MANGO123
+Pepsi,Drinks,40,60,100,PEPSI123
+Salt,Essentials,20,30,200,SALT123
+Biscuits,Snacks,30,50,80,BISCUITS123
+Sugar,Essentials,80,100,15,SUGAR123
+Rice,Essentials,120,150,20,RICE123
+Oil,Essentials,300,350,10,OIL123
+Tea,Drinks,200,250,5,TEA123

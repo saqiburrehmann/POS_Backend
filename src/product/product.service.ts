@@ -14,6 +14,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductResponseDto } from './dto/product-response.dto';
 import { nanoid } from 'nanoid';
 import { User, UserDocument } from 'src/users/schemas/user.schema';
+import * as XLSX from 'xlsx';
 
 @Injectable()
 export class ProductsService {
@@ -172,6 +173,35 @@ export class ProductsService {
     }
   }
 
+  async restock(id: string, quantity: number, userId: string) {
+    try {
+      if (quantity <= 0) {
+        throw new BadRequestException('Quantity must be greater than 0');
+      }
+
+      const product = await this.productModel.findById(id);
+      if (!product) throw new NotFoundException('Product not found');
+      if (product.owner.toString() !== userId) {
+        throw new UnauthorizedException('You cannot restock this product');
+      }
+
+      product.quantity += quantity;
+      const updated = await product.save();
+      await updated.populate('owner', 'firstName lastName');
+
+      return new ProductResponseDto(updated);
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException ||
+        error instanceof UnauthorizedException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
   async checkLowStock(): Promise<ProductResponseDto[]> {
     try {
       const lowStock = await this.productModel
@@ -180,6 +210,102 @@ export class ProductsService {
       return lowStock.map((p) => new ProductResponseDto(p));
     } catch {
       throw new InternalServerErrorException('Failed to check low stock');
+    }
+  }
+
+  async importFromExcel(file: Express.Multer.File, userId: string) {
+    try {
+      if (!file) {
+        throw new BadRequestException('No file uploaded');
+      }
+
+      const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet);
+
+      const results: { action: 'restocked' | 'created'; barcode: string }[] =
+        [];
+
+      for (const row of rows as any[]) {
+        const { name, category, costPrice, sellPrice, quantity, barcode } = row;
+
+        if (!name || !category || !costPrice || !sellPrice || !quantity) {
+          continue;
+        }
+
+        const existing = await this.productModel.findOne({ barcode });
+
+        if (existing) {
+          existing.quantity += Number(quantity);
+          await existing.save();
+          results.push({ action: 'restocked', barcode });
+        } else {
+          try {
+            const product = new this.productModel({
+              name,
+              category,
+              costPrice: Number(costPrice),
+              sellPrice: Number(sellPrice),
+              quantity: Number(quantity),
+              barcode: barcode || nanoid(10),
+              owner: new Types.ObjectId(userId),
+            });
+
+            await product.save();
+            results.push({ action: 'created', barcode: product.barcode });
+          } catch (err) {
+            if (err.code === 11000) {
+              const existingDup = await this.productModel.findOne({ barcode });
+              if (existingDup) {
+                existingDup.quantity += Number(quantity);
+                await existingDup.save();
+                results.push({ action: 'restocked', barcode });
+              }
+            } else {
+              throw err;
+            }
+          }
+        }
+      }
+
+      return { message: 'Import completed', results };
+    } catch {
+      throw new InternalServerErrorException('Failed to import stock');
+    }
+  }
+
+  async exportToExcel(userId: string) {
+    try {
+      const products = await this.productModel
+        .find({ owner: new Types.ObjectId(userId) })
+        .populate('owner', 'firstName lastName')
+        .lean();
+
+      if (!products || products.length === 0) {
+        throw new NotFoundException('No products found for export');
+      }
+
+      const rows = products.map((p) => {
+        const owner: any = p.owner;
+        return {
+          name: p.name,
+          category: p.category,
+          costPrice: p.costPrice,
+          sellPrice: p.sellPrice,
+          quantity: p.quantity,
+          barcode: p.barcode,
+          ownerName: owner?.firstName
+            ? `${owner.firstName} ${owner.lastName}`
+            : '',
+        };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
+      return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    } catch {
+      throw new InternalServerErrorException('Failed to export stock');
     }
   }
 }
