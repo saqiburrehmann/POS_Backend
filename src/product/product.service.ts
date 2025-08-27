@@ -214,11 +214,10 @@ export class ProductsService {
   }
 
   async importFromExcel(file: Express.Multer.File, userId: string) {
-    try {
-      if (!file) {
-        throw new BadRequestException('No file uploaded');
-      }
+    if (!file) throw new BadRequestException('No file uploaded');
 
+    // Note: removed session for local dev, will add later for replica set
+    try {
       const workbook = XLSX.read(file.buffer, { type: 'buffer' });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(sheet);
@@ -229,48 +228,40 @@ export class ProductsService {
       for (const row of rows as any[]) {
         const { name, category, costPrice, sellPrice, quantity, barcode } = row;
 
-        if (!name || !category || !costPrice || !sellPrice || !quantity) {
+        if (!name || !category || !costPrice || !sellPrice || !quantity)
           continue;
-        }
 
-        const existing = await this.productModel.findOne({ barcode });
+        let product = await this.productModel.findOne({ barcode });
 
-        if (existing) {
-          existing.quantity += Number(quantity);
-          await existing.save();
-          results.push({ action: 'restocked', barcode });
+        if (product) {
+          product.quantity += Number(quantity);
+          product.costPrice = Number(costPrice); // optional
+          product.sellPrice = Number(sellPrice);
+          await product.save();
+          results.push({ action: 'restocked', barcode: product.barcode });
         } else {
-          try {
-            const product = new this.productModel({
-              name,
-              category,
-              costPrice: Number(costPrice),
-              sellPrice: Number(sellPrice),
-              quantity: Number(quantity),
-              barcode: barcode || nanoid(10),
-              owner: new Types.ObjectId(userId),
-            });
+          const newProduct = new this.productModel({
+            name,
+            category,
+            costPrice: Number(costPrice),
+            sellPrice: Number(sellPrice),
+            quantity: Number(quantity),
+            barcode: barcode || nanoid(10),
+            owner: new Types.ObjectId(userId),
+          });
 
-            await product.save();
-            results.push({ action: 'created', barcode: product.barcode });
-          } catch (err) {
-            if (err.code === 11000) {
-              const existingDup = await this.productModel.findOne({ barcode });
-              if (existingDup) {
-                existingDup.quantity += Number(quantity);
-                await existingDup.save();
-                results.push({ action: 'restocked', barcode });
-              }
-            } else {
-              throw err;
-            }
-          }
+          await newProduct.save();
+          results.push({ action: 'created', barcode: newProduct.barcode });
         }
       }
 
       return { message: 'Import completed', results };
-    } catch {
-      throw new InternalServerErrorException('Failed to import stock');
+
+      // TODO: Later, wrap this in a session transaction for replica set / Atlas
+    } catch (error) {
+      throw new InternalServerErrorException(
+        error.message || 'Failed to import stock',
+      );
     }
   }
 
