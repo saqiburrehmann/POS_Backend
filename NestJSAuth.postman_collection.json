@@ -2,7 +2,7 @@
   "info": {
     "name": "Karyana POS API",
     "_postman_id": "a7f1e3a0-91ab-4c53-8f3c-9abc123456ef",
-    "description": "Postman collection for testing Karyana POS Auth + Users + Products APIs (with JWT + Import/Export support)",
+    "description": "Postman collection for testing Karyana POS Auth + Users + Products + Customers + Sales APIs (with JWT + Import/Export + Payment Status + Partial Payments + Stats)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -14,25 +14,13 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"firstName\": \"Ali\",\n  \"lastName\": \"Khan\",\n  \"email\": \"ali@example.com\",\n  \"password\": \"123456\",\n  \"confirmPassword\": \"123456\"\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/signup",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "signup"
-              ]
-            }
+            "url": { "raw": "{{baseUrl}}/auth/signup", "host": ["{{baseUrl}}"], "path": ["auth", "signup"] }
           }
         },
         {
@@ -40,25 +28,13 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"ali@example.com\",\n  \"password\": \"123456\"\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
-            }
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
           }
         }
       ]
@@ -70,43 +46,16 @@
           "name": "Get All Users",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/users",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "users"
-              ]
-            }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
           }
         },
         {
           "name": "Get User by ID",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "users",
-                "{{userId}}"
-              ]
-            }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
           }
         },
         {
@@ -114,51 +63,22 @@
           "request": {
             "method": "PATCH",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"Name\"\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "users",
-                "{{userId}}"
-              ]
-            }
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
           }
         },
         {
           "name": "Delete User",
           "request": {
             "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "users",
-                "{{userId}}"
-              ]
-            }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["users", "{{userId}}"] }
           }
         }
       ]
@@ -171,28 +91,14 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Sugar\",\n  \"category\": \"Essentials\",\n  \"costPrice\": 80,\n  \"sellPrice\": 100,\n  \"quantity\": 50,\n  \"alertQuantity\": 5\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/products",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products"
-              ]
-            }
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
           }
         },
         {
@@ -200,71 +106,30 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Rice\",\n  \"category\": \"Essentials\",\n  \"costPrice\": 120,\n  \"sellPrice\": 150,\n  \"quantity\": 30,\n  \"alertQuantity\": 5,\n  \"barcode\": \"RICE12345\"\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/products",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products"
-              ]
-            }
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
           }
         },
         {
           "name": "Get All Products",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/products",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products"
-              ]
-            }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
           }
         },
         {
           "name": "Get Product by ID",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/products/{{productId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "{{productId}}"
-              ]
-            }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["products", "{{productId}}"] }
           }
         },
         {
@@ -272,104 +137,30 @@
           "request": {
             "method": "PATCH",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"sellPrice\": 110,\n  \"quantity\": 40\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/products/{{productId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "{{productId}}"
-              ]
-            }
-          }
-        },
-        {
-          "name": "Update Product (barcode)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"barcode\": \"NEWBAR12345\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/products/{{productId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "{{productId}}"
-              ]
-            }
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["products", "{{productId}}"] }
           }
         },
         {
           "name": "Delete Product",
           "request": {
             "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/products/{{productId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "{{productId}}"
-              ]
-            }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["products", "{{productId}}"] }
           }
         },
         {
           "name": "Low Stock Alerts",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/products/alerts/low-stock",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "alerts",
-                "low-stock"
-              ]
-            }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/products/alerts/low-stock", "host": ["{{baseUrl}}"], "path": ["products", "alerts", "low-stock"] }
           }
         },
         {
@@ -377,62 +168,23 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"quantity\": 10\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/products/{{productId}}/restock",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "{{productId}}",
-                "restock"
-              ]
-            }
+            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 10\n}" },
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}/restock", "host": ["{{baseUrl}}"], "path": ["products", "{{productId}}", "restock"] }
           }
         },
         {
           "name": "Import Stock (Excel/CSV)",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "body": {
               "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "file",
-                  "type": "file",
-                  "src": []
-                }
-              ]
+              "formdata": [{ "key": "file", "type": "file", "src": [] }]
             },
-            "url": {
-              "raw": "{{baseUrl}}/products/import",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "import"
-              ]
-            }
+            "url": { "raw": "{{baseUrl}}/products/import", "host": ["{{baseUrl}}"], "path": ["products", "import"] }
           }
         },
         {
@@ -440,26 +192,81 @@
           "request": {
             "method": "GET",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Accept",
-                "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-              }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/products/export/excel",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "export",
-                "excel"
-              ]
-            }
+            "url": { "raw": "{{baseUrl}}/products/export/excel", "host": ["{{baseUrl}}"], "path": ["products", "export", "excel"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Create Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ali Customer\",\n  \"phone\": \"03001234567\",\n  \"email\": \"ali.customer@example.com\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/customers", "host": ["{{baseUrl}}"], "path": ["customers"] }
+          }
+        },
+        {
+          "name": "Get All Customers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/customers", "host": ["{{baseUrl}}"], "path": ["customers"] }
+          }
+        },
+        {
+          "name": "Get Customer by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/customers/{{customerId}}", "host": ["{{baseUrl}}"], "path": ["customers", "{{customerId}}"] }
+          }
+        },
+        {
+          "name": "Get Customer Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/customers/{{customerId}}/stats", "host": ["{{baseUrl}}"], "path": ["customers", "{{customerId}}", "stats"] }
+          }
+        },
+        {
+          "name": "Get Customer Sales",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/customers/{{customerId}}/sales", "host": ["{{baseUrl}}"], "path": ["customers", "{{customerId}}", "sales"] }
+          }
+        },
+        {
+          "name": "Export Customers (Excel)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+            ],
+            "url": { "raw": "{{baseUrl}}/customers/export/excel", "host": ["{{baseUrl}}"], "path": ["customers", "export", "excel"] }
+          }
+        },
+        {
+          "name": "Get Customers Payment Status (All)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/customers/payment-status", "host": ["{{baseUrl}}"], "path": ["customers", "payment-status"] }
           }
         }
       ]
@@ -468,118 +275,102 @@
       "name": "Sales",
       "item": [
         {
-          "name": "Create Sale",
+          "name": "Create Sale - Full Payment",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"products\": [\n    { \"productId\": \"{{productId}}\", \"quantity\": 5 }\n  ],\n  \"discount\": 50,\n  \"paymentMode\": \"cash\",\n  \"customerName\": \"John Doe\"\n}"
+              "raw": "{\n  \"products\": [\n    { \"productId\": \"{{productId}}\", \"quantity\": 5 }\n  ],\n  \"discount\": 50,\n  \"paymentMode\": \"cash\",\n  \"customerName\": \"John Full\",\n  \"customerId\": \"{{customerId}}\",\n  \"payNow\": true\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/sales",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "sales"
-              ]
-            }
+            "url": { "raw": "{{baseUrl}}/sales", "host": ["{{baseUrl}}"], "path": ["sales"] }
+          }
+        },
+        {
+          "name": "Create Sale - Partial Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"products\": [\n    { \"productId\": \"{{productId}}\", \"quantity\": 10 }\n  ],\n  \"discount\": 20,\n  \"paymentMode\": \"cash\",\n  \"customerName\": \"John Partial\",\n  \"customerId\": \"{{customerId}}\",\n  \"paidAmount\": 500\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/sales", "host": ["{{baseUrl}}"], "path": ["sales"] }
+          }
+        },
+        {
+          "name": "Create Sale - Outstanding (No Payment)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"products\": [\n    { \"productId\": \"{{productId}}\", \"quantity\": 2 }\n  ],\n  \"paymentMode\": \"credit\",\n  \"customerName\": \"John Outstanding\",\n  \"customerId\": \"{{customerId}}\",\n  \"paidAmount\": 0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/sales", "host": ["{{baseUrl}}"], "path": ["sales"] }
           }
         },
         {
           "name": "Get All Sales",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/sales",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "sales"
-              ]
-            }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/sales", "host": ["{{baseUrl}}"], "path": ["sales"] }
           }
         },
         {
           "name": "Get Sale by ID",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/sales/{{saleId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "sales",
-                "{{saleId}}"
-              ]
-            }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/sales/{{saleId}}", "host": ["{{baseUrl}}"], "path": ["sales", "{{saleId}}"] }
           }
         },
         {
           "name": "Get Sales Report",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": {
               "raw": "{{baseUrl}}/sales/report?startDate=2025-08-01&endDate=2025-08-31",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "sales",
-                "report"
+              "host": ["{{baseUrl}}"],
+              "path": ["sales", "report"],
+              "query": [
+                { "key": "startDate", "value": "2025-08-01" },
+                { "key": "endDate", "value": "2025-08-31" }
               ]
             }
+          }
+        },
+        {
+          "name": "Export Sales (Excel)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+            ],
+            "url": { "raw": "{{baseUrl}}/sales/export/excel", "host": ["{{baseUrl}}"], "path": ["sales", "export", "excel"] }
           }
         }
       ]
     }
   ],
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:3000"
-    },
-    {
-      "key": "token",
-      "value": ""
-    },
-    {
-      "key": "userId",
-      "value": ""
-    },
-    {
-      "key": "productId",
-      "value": ""
-    }
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "productId", "value": "" },
+    { "key": "customerId", "value": "" },
+    { "key": "saleId", "value": "" }
   ]
 }

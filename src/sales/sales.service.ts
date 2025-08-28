@@ -8,7 +8,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Sale, SaleDocument } from './schemas/sale.schema';
 import { Product, ProductDocument } from 'src/product/schemas/product.schema';
+import {
+  Customer,
+  CustomerDocument,
+} from 'src/customers/schemas/customer.schema';
 import { CreateSaleDto } from './dto/create-sale.dto';
+import { calculateSale, getPaymentStatus } from './utils/sales.utils';
 
 @Injectable()
 export class SalesService {
@@ -16,12 +21,13 @@ export class SalesService {
     @InjectModel(Sale.name) private readonly saleModel: Model<SaleDocument>,
     @InjectModel(Product.name)
     private readonly productModel: Model<ProductDocument>,
+    @InjectModel(Customer.name)
+    private readonly customerModel: Model<CustomerDocument>,
   ) {}
 
   async create(dto: CreateSaleDto): Promise<Sale> {
     try {
       const productIds = dto.products.map((p) => p.productId);
-
       const products = await this.productModel.find({
         _id: { $in: productIds },
       });
@@ -30,79 +36,81 @@ export class SalesService {
         throw new NotFoundException('Some products not found');
       }
 
-      let total = 0;
-      let profit = 0;
-      const saleProducts: {
-        product: Types.ObjectId;
-        quantity: number;
-        price: number;
-      }[] = [];
-
+      // check stock & update
       for (const item of dto.products) {
         const product = products.find(
           (p) => p._id.toString() === item.productId,
         );
         if (!product) continue;
-
         if (product.quantity < item.quantity) {
           throw new BadRequestException(`Not enough stock for ${product.name}`);
         }
-
-        // Deduct stock without session (for local development)
         product.quantity -= item.quantity;
         await product.save();
-
-        const lineTotal = product.sellPrice * item.quantity;
-        total += lineTotal;
-        profit += (product.sellPrice - product.costPrice) * item.quantity;
-
-        saleProducts.push({
-          product: new Types.ObjectId(item.productId),
-          quantity: item.quantity,
-          price: product.sellPrice,
-        });
       }
 
-      if (dto.discount) {
-        total = Math.max(0, total - dto.discount);
-        profit = Math.max(0, profit - dto.discount);
-      }
+      const { total, profit, saleProducts } = calculateSale(
+        products,
+        dto.products,
+        dto.discount ?? 0,
+      );
 
-      const sale = new this.saleModel({
+      const paidAmount = dto.payNow ? total : (dto.paidAmount ?? 0);
+      const status = getPaymentStatus(total, paidAmount);
+
+      const sale = await this.saleModel.create({
         products: saleProducts,
         discount: dto.discount || 0,
         total,
         profit,
         paymentMode: dto.paymentMode,
-        customerName: dto.customerName,
+        paidAmount,
+        status,
+        customer: dto.customerId ? new Types.ObjectId(dto.customerId) : null,
       });
 
-      return await sale.save();
+      // update customer account if exists
+      if (dto.customerId) {
+        const customer = await this.customerModel.findById(dto.customerId);
+        if (!customer) throw new NotFoundException('Customer not found');
 
-      // TODO: Later, wrap this in a session transaction for replica set / Atlas
+        if (status !== 'paid') {
+          customer.pendingAmount += total - paidAmount;
+        }
+
+        customer.sales.push(sale._id as Types.ObjectId);
+        await customer.save();
+      }
+
+      return sale;
     } catch (error) {
       if (
         error instanceof BadRequestException ||
         error instanceof NotFoundException
-      )
+      ) {
         throw error;
+      }
       throw new InternalServerErrorException('Failed to create sale');
     }
   }
 
-  async findAll() {
+  async findAll(): Promise<Sale[]> {
     try {
-      return await this.saleModel.find().populate('products.product');
+      return this.saleModel
+        .find()
+        .populate('products.product')
+        .populate('customer');
     } catch {
       throw new InternalServerErrorException('Failed to fetch sales');
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<Sale> {
     try {
       const sale = await this.saleModel
         .findById(id)
-        .populate('products.product');
+        .populate('products.product')
+        .populate('customer');
       if (!sale) throw new NotFoundException('Sale not found');
       return sale;
     } catch (error) {
@@ -113,55 +121,21 @@ export class SalesService {
 
   async getReport(startDate?: string, endDate?: string) {
     try {
-      // console.log('Generating sales report for:', startDate, 'to', endDate);
-
-      let start: Date | undefined;
-      let end: Date | undefined;
-
-      if (startDate) {
-        start = new Date(startDate);
-        if (isNaN(start.getTime())) {
-          throw new BadRequestException(
-            'Invalid startDate format. Use YYYY-MM-DD',
-          );
-        }
-      }
-
-      if (endDate) {
-        end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        if (isNaN(end.getTime())) {
-          throw new BadRequestException(
-            'Invalid endDate format. Use YYYY-MM-DD',
-          );
-        }
-      }
-
       const filter: any = {};
-      if (start && end) filter.createdAt = { $gte: start, $lte: end };
-      else if (start) filter.createdAt = { $gte: start };
-      else if (end) filter.createdAt = { $lte: end };
+      if (startDate || endDate) filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      if (endDate) filter.createdAt.$lte = new Date(endDate);
 
       const sales = await this.saleModel
         .find(filter)
-        .populate('products.product');
+        .populate('products.product')
+        .populate('customer');
 
-      if (!sales.length) {
-        // console.warn('No sales found for the given date range');
-        return { totalRevenue: 0, totalProfit: 0, salesCount: 0 };
-      }
+      const totalRevenue = sales.reduce((acc, s) => acc + s.total, 0);
+      const totalProfit = sales.reduce((acc, s) => acc + s.profit, 0);
 
-      const totalRevenue = sales.reduce((acc, sale) => acc + sale.total, 0);
-      const totalProfit = sales.reduce((acc, sale) => acc + sale.profit, 0);
-      const salesCount = sales.length;
-
-      const report = { totalRevenue, totalProfit, salesCount };
-      // console.log('Report:', report);
-
-      return report;
-    } catch (error) {
-      // console.error('Error generating report:', error);
-      if (error instanceof BadRequestException) throw error;
+      return { totalRevenue, totalProfit, salesCount: sales.length };
+    } catch {
       throw new InternalServerErrorException('Failed to generate report');
     }
   }

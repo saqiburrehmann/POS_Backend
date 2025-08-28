@@ -21,15 +21,12 @@ export class AuthService {
     dto: CreateUserDto,
   ): Promise<{ id: string; accessToken: string }> {
     try {
+      // Only allow one admin
       const existingAdmin = await this.usersService.findByRole('admin');
-      if (existingAdmin) {
-        throw new ConflictException('An admin account already exists');
-      }
+      if (existingAdmin)
+        throw new ConflictException('Admin account already exists');
 
-      const user = await this.usersService.create({
-        ...dto,
-        role: 'admin',
-      } as any);
+      const user = await this.usersService.createAdmin(dto);
 
       const payload = { sub: user.id, email: user.email, role: user.role };
       const accessToken = this.jwtService.sign(payload);
@@ -43,7 +40,7 @@ export class AuthService {
           .join(', ');
         throw new BadRequestException(messages || 'Validation failed');
       }
-      throw new InternalServerErrorException('Failed to sign up');
+      throw new InternalServerErrorException('Signup failed');
     }
   }
 
@@ -52,23 +49,20 @@ export class AuthService {
     password: string,
   ): Promise<{ id: string; accessToken: string }> {
     try {
-      const userDoc = await this.usersService.findByEmail(email);
-      if (!userDoc) throw new UnauthorizedException('Invalid credentials');
+      const user = await this.usersService.findByEmail(email);
+      if (!user) throw new UnauthorizedException('Invalid credentials');
 
-      const isValid = await bcrypt.compare(password, userDoc.password as string);
-      if (!isValid) throw new UnauthorizedException('Invalid credentials');
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid)
+        throw new UnauthorizedException('Invalid credentials');
 
-      const payload = {
-        sub: userDoc.id,
-        email: userDoc.email,
-        role: userDoc.role,
-      };
+      const payload = { sub: user.id, email: user.email, role: user.role };
       const accessToken = this.jwtService.sign(payload);
 
-      return { id: userDoc.id, accessToken };
+      return { id: user.id, accessToken };
     } catch (error) {
       if (error instanceof UnauthorizedException) throw error;
-      throw new InternalServerErrorException('Failed to log in');
+      throw new InternalServerErrorException('Login failed');
     }
   }
 }

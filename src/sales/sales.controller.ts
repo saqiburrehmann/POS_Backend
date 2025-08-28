@@ -6,7 +6,6 @@ import {
   Param,
   UseGuards,
   Query,
-  BadRequestException,
 } from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { CreateSaleDto } from './dto/create-sale.dto';

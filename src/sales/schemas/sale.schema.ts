@@ -1,14 +1,9 @@
-// sales/schemas/sale.schema.ts
+// schemas/sale.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Product } from 'src/product/schemas/product.schema';
+import { Customer } from 'src/customers/schemas/customer.schema';
 
-export type SaleDocument = Sale &
-  Document & {
-    _id: Types.ObjectId;
-    createdAt: Date;
-    updatedAt: Date;
-  };
+export type SaleDocument = Sale & Document;
 
 @Schema({ timestamps: true })
 export class Sale {
@@ -23,7 +18,7 @@ export class Sale {
     required: true,
   })
   products: {
-    product: Product | Types.ObjectId;
+    product: Types.ObjectId;
     quantity: number;
     price: number;
   }[];
@@ -40,8 +35,14 @@ export class Sale {
   @Prop({ required: true, enum: ['cash', 'credit'] })
   paymentMode: 'cash' | 'credit';
 
-  @Prop()
-  customerName?: string;
+  @Prop({ default: 0 })
+  paidAmount: number;
+
+  @Prop({ default: 'pending', enum: ['paid', 'pending', 'partial'] })
+  status: 'paid' | 'pending' | 'partial';
+
+  @Prop({ type: Types.ObjectId, ref: 'Customer' })
+  customer?: Types.ObjectId;
 }
 
 export const SaleSchema = SchemaFactory.createForClass(Sale);

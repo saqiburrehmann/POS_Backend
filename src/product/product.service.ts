@@ -24,62 +24,111 @@ export class ProductsService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async create(dto: CreateProductDto): Promise<ProductResponseDto> {
+  async create(
+    dto: CreateProductDto,
+    ownerId: string,
+  ): Promise<ProductResponseDto> {
     try {
-      const { ownerId, ...rest } = dto;
-
-      if (!ownerId || !Types.ObjectId.isValid(ownerId)) {
-        throw new NotFoundException('Valid ownerId is required');
+      if (!Types.ObjectId.isValid(ownerId)) {
+        throw new BadRequestException('Invalid ownerId');
       }
 
-      const user = await this.userModel.findById(ownerId);
-      if (!user) throw new NotFoundException('Owner user not found');
+      const owner = await this.userModel.findById(ownerId);
+      if (!owner) throw new NotFoundException('Owner not found');
 
+      // Prevent duplicate product name + category for same owner
       const existingProduct = await this.productModel.findOne({
-        name: rest.name,
-        category: rest.category,
+        name: dto.name,
+        category: dto.category,
+        owner: owner._id,
       });
 
       if (existingProduct) {
-        if (!existingProduct.owner)
-          existingProduct.owner = new Types.ObjectId(ownerId);
-        existingProduct.quantity += rest.quantity;
-        existingProduct.costPrice = rest.costPrice;
-        existingProduct.sellPrice = rest.sellPrice;
-
+        existingProduct.quantity += dto.quantity;
+        existingProduct.costPrice = dto.costPrice;
+        existingProduct.sellPrice = dto.sellPrice;
         const updated = await existingProduct.save();
         await updated.populate('owner', 'firstName lastName');
         return new ProductResponseDto(updated);
       }
 
-      if (!rest.barcode) rest.barcode = nanoid(10);
-
-      const barcodeExists = await this.productModel.findOne({
-        barcode: rest.barcode,
-      });
+      // Ensure barcode uniqueness
+      const barcode = dto.barcode || nanoid(10);
+      const barcodeExists = await this.productModel.findOne({ barcode });
       if (barcodeExists) throw new ConflictException('Barcode already exists');
 
       const product = new this.productModel({
-        ...rest,
-        owner: new Types.ObjectId(ownerId),
+        ...dto,
+        barcode,
+        owner: owner._id,
       });
-
       const saved = await product.save();
       await saved.populate('owner', 'firstName lastName');
       return new ProductResponseDto(saved);
     } catch (error) {
-      if (error.name === 'ValidationError') {
-        const messages = Object.values(error.errors)
-          .map((e: any) => e.message)
-          .join(', ');
-        throw new BadRequestException(messages || 'Validation failed');
-      }
       if (
+        error instanceof BadRequestException ||
         error instanceof NotFoundException ||
         error instanceof ConflictException
       )
         throw error;
+
       throw new InternalServerErrorException('Failed to create product');
+    }
+  }
+
+  async update(
+    id: string,
+    dto: UpdateProductDto,
+    userId: string,
+  ): Promise<ProductResponseDto> {
+    try {
+      const product = await this.productModel.findById(id);
+      if (!product) throw new NotFoundException('Product not found');
+
+      // check ownership
+      if (product.owner.toString() !== userId.toString()) {
+        throw new UnauthorizedException('You cannot update this product');
+      }
+
+      // barcode uniqueness check
+      if (dto.barcode) {
+        const exists = await this.productModel.findOne({
+          barcode: dto.barcode,
+          _id: { $ne: id },
+        });
+        if (exists) throw new ConflictException('Barcode already exists');
+      }
+
+      // handle owner change if provided
+      if (dto.ownerId) {
+        const user = await this.userModel.findById(dto.ownerId);
+        if (!user) throw new NotFoundException('New owner not found');
+        product.owner = new Types.ObjectId(dto.ownerId);
+      }
+
+      // only assign defined fields (avoid overwriting with undefined)
+      Object.entries(dto).forEach(([key, value]) => {
+        if (value !== undefined && key !== 'ownerId') {
+          (product as any)[key] = value;
+        }
+      });
+
+      const updated = await product.save();
+      await updated.populate('owner', 'firstName lastName');
+      return new ProductResponseDto(updated);
+    } catch (error) {
+      console.error('Update error:', error); // 👈 Keep this in prod logs
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ConflictException ||
+        error instanceof UnauthorizedException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException('Failed to update product');
     }
   }
 
@@ -87,8 +136,7 @@ export class ProductsService {
     try {
       const products = await this.productModel
         .find()
-        .populate('owner', 'firstName lastName')
-        .sort({ createdAt: -1 });
+        .populate('owner', 'firstName lastName');
       return products.map((p) => new ProductResponseDto(p));
     } catch {
       throw new InternalServerErrorException('Failed to fetch products');
@@ -105,52 +153,6 @@ export class ProductsService {
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException('Failed to fetch product');
-    }
-  }
-
-  async update(
-    id: string,
-    dto: UpdateProductDto,
-    userId: string,
-  ): Promise<ProductResponseDto> {
-    try {
-      const product = await this.productModel.findById(id);
-      if (!product) throw new NotFoundException('Product not found');
-      if (product.owner.toString() !== userId)
-        throw new UnauthorizedException('You cannot update this product');
-
-      if (dto.barcode) {
-        const existing = await this.productModel.findOne({
-          barcode: dto.barcode,
-          _id: { $ne: id },
-        });
-        if (existing) throw new ConflictException('Barcode already exists');
-      }
-
-      if (dto.ownerId) {
-        const user = await this.userModel.findById(dto.ownerId);
-        if (!user) throw new NotFoundException('Owner user not found');
-        product.owner = new Types.ObjectId(dto.ownerId);
-      }
-
-      Object.assign(product, dto);
-      const updated = await product.save();
-      await updated.populate('owner', 'firstName lastName');
-      return new ProductResponseDto(updated);
-    } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ConflictException ||
-        error instanceof UnauthorizedException
-      )
-        throw error;
-      if (error.name === 'ValidationError') {
-        const messages = Object.values(error.errors)
-          .map((e: any) => e.message)
-          .join(', ');
-        throw new BadRequestException(messages || 'Validation failed');
-      }
-      throw new InternalServerErrorException('Failed to update product');
     }
   }
 
@@ -175,30 +177,26 @@ export class ProductsService {
 
   async restock(id: string, quantity: number, userId: string) {
     try {
-      if (quantity <= 0) {
-        throw new BadRequestException('Quantity must be greater than 0');
-      }
+      if (quantity <= 0) throw new BadRequestException('Quantity must be > 0');
 
       const product = await this.productModel.findById(id);
       if (!product) throw new NotFoundException('Product not found');
-      if (product.owner.toString() !== userId) {
+      if (product.owner.toString() !== userId)
         throw new UnauthorizedException('You cannot restock this product');
-      }
 
       product.quantity += quantity;
       const updated = await product.save();
       await updated.populate('owner', 'firstName lastName');
-
       return new ProductResponseDto(updated);
     } catch (error) {
       if (
         error instanceof BadRequestException ||
         error instanceof NotFoundException ||
         error instanceof UnauthorizedException
-      ) {
+      )
         throw error;
-      }
-      throw new InternalServerErrorException(error.message);
+
+      throw new InternalServerErrorException('Failed to restock product');
     }
   }
 
@@ -215,8 +213,6 @@ export class ProductsService {
 
   async importFromExcel(file: Express.Multer.File, userId: string) {
     if (!file) throw new BadRequestException('No file uploaded');
-
-    // Note: removed session for local dev, will add later for replica set
     try {
       const workbook = XLSX.read(file.buffer, { type: 'buffer' });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -227,15 +223,17 @@ export class ProductsService {
 
       for (const row of rows as any[]) {
         const { name, category, costPrice, sellPrice, quantity, barcode } = row;
-
         if (!name || !category || !costPrice || !sellPrice || !quantity)
           continue;
 
-        let product = await this.productModel.findOne({ barcode });
+        let product = await this.productModel.findOne({
+          barcode,
+          owner: userId,
+        });
 
         if (product) {
           product.quantity += Number(quantity);
-          product.costPrice = Number(costPrice); // optional
+          product.costPrice = Number(costPrice);
           product.sellPrice = Number(sellPrice);
           await product.save();
           results.push({ action: 'restocked', barcode: product.barcode });
@@ -249,53 +247,37 @@ export class ProductsService {
             barcode: barcode || nanoid(10),
             owner: new Types.ObjectId(userId),
           });
-
           await newProduct.save();
           results.push({ action: 'created', barcode: newProduct.barcode });
         }
       }
 
       return { message: 'Import completed', results };
-
-      // TODO: Later, wrap this in a session transaction for replica set / Atlas
-    } catch (error) {
-      throw new InternalServerErrorException(
-        error.message || 'Failed to import stock',
-      );
+    } catch {
+      throw new InternalServerErrorException('Failed to import stock');
     }
   }
 
   async exportToExcel(userId: string) {
     try {
-      const products = await this.productModel
-        .find({ owner: new Types.ObjectId(userId) })
-        .populate('owner', 'firstName lastName')
-        .lean();
+      const products = await this.productModel.find({ owner: userId }).lean();
+      if (!products.length) throw new NotFoundException('No products found');
 
-      if (!products || products.length === 0) {
-        throw new NotFoundException('No products found for export');
-      }
-
-      const rows = products.map((p) => {
-        const owner: any = p.owner;
-        return {
-          name: p.name,
-          category: p.category,
-          costPrice: p.costPrice,
-          sellPrice: p.sellPrice,
-          quantity: p.quantity,
-          barcode: p.barcode,
-          ownerName: owner?.firstName
-            ? `${owner.firstName} ${owner.lastName}`
-            : '',
-        };
-      });
+      const rows = products.map((p) => ({
+        name: p.name,
+        category: p.category,
+        costPrice: p.costPrice,
+        sellPrice: p.sellPrice,
+        quantity: p.quantity,
+        barcode: p.barcode,
+      }));
 
       const worksheet = XLSX.utils.json_to_sheet(rows);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
       return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-    } catch {
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException('Failed to export stock');
     }
   }

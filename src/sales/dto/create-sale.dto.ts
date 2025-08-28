@@ -1,11 +1,27 @@
-import { IsArray, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsMongoId,
+  IsNumber,
+  IsOptional,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
+export enum PaymentMode {
+  CASH = 'cash',
+  CREDIT = 'credit',
+}
+
 class SaleProductDto {
-  @IsString()
+  @IsMongoId()
   productId: string;
 
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   quantity: number;
 }
 
@@ -16,13 +32,24 @@ export class CreateSaleDto {
   products: SaleProductDto[];
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
+  @Min(0)
   discount?: number;
 
-  @IsEnum(['cash', 'credit'])
-  paymentMode: 'cash' | 'credit';
+  @IsEnum(PaymentMode)
+  paymentMode: PaymentMode;
 
   @IsOptional()
-  @IsString()
-  customerName?: string;
+  @IsMongoId()
+  customerId?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  paidAmount?: number;
+
+  @IsOptional()
+  payNow?: boolean;
 }

@@ -24,17 +24,11 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
-  async create(
-    @Body() body: Omit<CreateProductDto, 'ownerId'>,
-    @Req() req: Request,
-  ) {
+  @UseGuards(JwtAuthGuard)
+  async create(@Body() dto: CreateProductDto, @Req() req: Request) {
     const userId = req.user?.['id'] || req.user?.['sub'];
-    if (!userId) {
-      throw new UnauthorizedException('Authenticated userId not found');
-    }
-    return this.productsService.create({ ...body, ownerId: userId });
+    return this.productsService.create(dto, userId);
   }
 
   @UseGuards(JwtAuthGuard)

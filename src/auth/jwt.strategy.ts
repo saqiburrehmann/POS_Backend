@@ -12,15 +12,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // console.log('✅ JWT payload received in validate():', payload);
+    if (!payload.sub) throw new UnauthorizedException('Invalid token');
 
-    if (!payload.sub) {
-      // console.error('❌ JWT payload missing sub (user id)');
-      throw new UnauthorizedException('Invalid token: sub missing');
-    }
-
-    const user = { id: payload.sub, email: payload.email, role: payload.role };
-    // console.log('✅ User object attached to request:', user);
-    return user; // this will be req.user
+    return { id: payload.sub, email: payload.email, role: payload.role };
   }
 }
