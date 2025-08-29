@@ -11,7 +11,7 @@ export class Sale {
     type: [
       {
         product: { type: Types.ObjectId, ref: 'Product', required: true },
-        quantity: { type: Number, required: true },
+        stock: { type: Number, required: true },
         price: { type: Number, required: true },
       },
     ],
@@ -19,7 +19,7 @@ export class Sale {
   })
   products: {
     product: Types.ObjectId;
-    quantity: number;
+    stock: number;
     price: number;
   }[];
 

@@ -4,9 +4,9 @@ export class ProductResponseDto {
   id: string;
   name: string;
   category: string;
-  sellPrice: number;
-  quantity: number;
-  alertQuantity: number;
+  sellingPrice: number;
+  stock: number;
+  alertstock: number;
   barcode: string;
   ownerId: string;
   ownerName?: string;
@@ -15,9 +15,9 @@ export class ProductResponseDto {
     this.id = product._id.toString();
     this.name = product.name;
     this.category = product.category;
-    this.sellPrice = product.sellPrice;
-    this.quantity = product.quantity;
-    this.alertQuantity = product.alertQuantity;
+    this.sellingPrice = product.sellingPrice;
+    this.stock = product.stock;
+    this.alertstock = product.alertstock;
     this.barcode = product.barcode;
     this.ownerId = product.owner?._id?.toString() || product.owner?.toString();
     if (product.owner?.firstName && product.owner?.lastName) {

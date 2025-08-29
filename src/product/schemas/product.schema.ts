@@ -22,13 +22,13 @@ export class Product {
   costPrice: number;
 
   @Prop({ required: true })
-  sellPrice: number;
+  sellingPrice: number;
 
   @Prop({ required: true, default: 0 })
-  quantity: number;
+  stock: number;
 
   @Prop({ default: 5 })
-  alertQuantity: number;
+  alertstock: number;
 
   @Prop({ unique: true, required: true })
   barcode: string;

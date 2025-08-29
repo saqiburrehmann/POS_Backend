@@ -3,14 +3,14 @@ import { ProductDocument } from 'src/product/schemas/product.schema';
 
 export function calculateSale(
   products: ProductDocument[],
-  dtoProducts: { productId: string; quantity: number }[],
+  dtoProducts: { productId: string; stock: number }[],
   discount: number,
 ) {
   let total = 0;
   let profit = 0;
   const saleProducts: {
     product: Types.ObjectId;
-    quantity: number;
+    stock: number;
     price: number;
   }[] = [];
 
@@ -18,14 +18,14 @@ export function calculateSale(
     const product = products.find((p) => p._id.toString() === item.productId);
     if (!product) continue;
 
-    const lineTotal = product.sellPrice * item.quantity;
+    const lineTotal = product.sellingPrice * item.stock;
     total += lineTotal;
-    profit += (product.sellPrice - product.costPrice) * item.quantity;
+    profit += (product.sellingPrice - product.costPrice) * item.stock;
 
     saleProducts.push({
       product: product._id,
-      quantity: item.quantity,
-      price: product.sellPrice,
+      stock: item.stock,
+      price: product.sellingPrice,
     });
   }
 

@@ -96,7 +96,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Sugar\",\n  \"category\": \"Essentials\",\n  \"costPrice\": 80,\n  \"sellPrice\": 100,\n  \"quantity\": 50,\n  \"alertQuantity\": 5\n}"
+              "raw": "{\n  \"name\": \"Sugar\",\n  \"category\": \"Essentials\",\n  \"costPrice\": 80,\n  \"sellingPrice\": 100,\n  \"stock\": 50,\n  \"alertstock\": 5\n}"
             },
             "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
           }
@@ -111,7 +111,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Rice\",\n  \"category\": \"Essentials\",\n  \"costPrice\": 120,\n  \"sellPrice\": 150,\n  \"quantity\": 30,\n  \"alertQuantity\": 5,\n  \"barcode\": \"RICE12345\"\n}"
+              "raw": "{\n  \"name\": \"Rice\",\n  \"category\": \"Essentials\",\n  \"costPrice\": 120,\n  \"sellingPrice\": 150,\n  \"stock\": 30,\n  \"alertstock\": 5,\n  \"barcode\": \"RICE12345\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
           }
@@ -133,7 +133,7 @@
           }
         },
         {
-          "name": "Update Product (price/quantity)",
+          "name": "Update Product (price/stock)",
           "request": {
             "method": "PATCH",
             "header": [
@@ -142,7 +142,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"sellPrice\": 110,\n  \"quantity\": 40\n}"
+              "raw": "{\n  \"sellingPrice\": 110,\n  \"stock\": 40\n}"
             },
             "url": { "raw": "{{baseUrl}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["products", "{{productId}}"] }
           }
@@ -171,7 +171,7 @@
               { "key": "Authorization", "value": "Bearer {{token}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
-            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 10\n}" },
+            "body": { "mode": "raw", "raw": "{\n  \"stock\": 10\n}" },
             "url": { "raw": "{{baseUrl}}/products/{{productId}}/restock", "host": ["{{baseUrl}}"], "path": ["products", "{{productId}}", "restock"] }
           }
         },
@@ -284,7 +284,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"products\": [\n    { \"productId\": \"{{productId}}\", \"quantity\": 5 }\n  ],\n  \"discount\": 50,\n  \"paymentMode\": \"cash\",\n  \"customerName\": \"John Full\",\n  \"customerId\": \"{{customerId}}\",\n  \"payNow\": true\n}"
+              "raw": "{\n  \"products\": [\n    { \"productId\": \"{{productId}}\", \"stock\": 5 }\n  ],\n  \"discount\": 50,\n  \"paymentMode\": \"cash\",\n  \"customerName\": \"John Full\",\n  \"customerId\": \"{{customerId}}\",\n  \"payNow\": true\n}"
             },
             "url": { "raw": "{{baseUrl}}/sales", "host": ["{{baseUrl}}"], "path": ["sales"] }
           }
@@ -299,7 +299,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"products\": [\n    { \"productId\": \"{{productId}}\", \"quantity\": 10 }\n  ],\n  \"discount\": 20,\n  \"paymentMode\": \"cash\",\n  \"customerName\": \"John Partial\",\n  \"customerId\": \"{{customerId}}\",\n  \"paidAmount\": 500\n}"
+              "raw": "{\n  \"products\": [\n    { \"productId\": \"{{productId}}\", \"stock\": 10 }\n  ],\n  \"discount\": 20,\n  \"paymentMode\": \"cash\",\n  \"customerName\": \"John Partial\",\n  \"customerId\": \"{{customerId}}\",\n  \"paidAmount\": 500\n}"
             },
             "url": { "raw": "{{baseUrl}}/sales", "host": ["{{baseUrl}}"], "path": ["sales"] }
           }
@@ -314,7 +314,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"products\": [\n    { \"productId\": \"{{productId}}\", \"quantity\": 2 }\n  ],\n  \"paymentMode\": \"credit\",\n  \"customerName\": \"John Outstanding\",\n  \"customerId\": \"{{customerId}}\",\n  \"paidAmount\": 0\n}"
+              "raw": "{\n  \"products\": [\n    { \"productId\": \"{{productId}}\", \"stock\": 2 }\n  ],\n  \"paymentMode\": \"credit\",\n  \"customerName\": \"John Outstanding\",\n  \"customerId\": \"{{customerId}}\",\n  \"paidAmount\": 0\n}"
             },
             "url": { "raw": "{{baseUrl}}/sales", "host": ["{{baseUrl}}"], "path": ["sales"] }
           }

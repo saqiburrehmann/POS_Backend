@@ -42,10 +42,10 @@ export class SalesService {
           (p) => p._id.toString() === item.productId,
         );
         if (!product) continue;
-        if (product.quantity < item.quantity) {
+        if (product.stock < item.stock) {
           throw new BadRequestException(`Not enough stock for ${product.name}`);
         }
-        product.quantity -= item.quantity;
+        product.stock -= item.stock;
         await product.save();
       }
 

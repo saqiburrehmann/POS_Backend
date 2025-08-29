@@ -14,15 +14,15 @@ export class CreateProductDto {
 
   @IsNumber()
   @Min(0)
-  sellPrice: number;
+  sellingPrice: number;
 
   @IsNumber()
   @Min(0)
-  quantity: number;
+  stock: number;
 
   @IsNumber()
   @Min(0)
-  alertQuantity: number;
+  alertstock: number;
 
   @IsOptional()
   barcode?: string;

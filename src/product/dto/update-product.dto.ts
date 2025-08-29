@@ -21,19 +21,19 @@ export class UpdateProductDto {
   @IsNumber()
   @Min(0)
   @Type(() => Number)
-  sellPrice?: number;
+  sellingPrice?: number;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
   @Type(() => Number)
-  quantity?: number;
+  stock?: number;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
   @Type(() => Number)
-  alertQuantity?: number;
+  alertstock?: number;
 
   @IsOptional()
   @IsString()

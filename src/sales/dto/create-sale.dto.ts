@@ -22,7 +22,7 @@ class SaleProductDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  quantity: number;
+  stock: number;
 }
 
 export class CreateSaleDto {

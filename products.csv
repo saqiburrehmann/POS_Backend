@@ -1,4 +1,4 @@
-name,category,costPrice,sellPrice,quantity,barcode
+name,category,costPrice,sellingPrice,quantity,barcode
 Shampoo,Essentials,4.50,5.99,100,1111
 Soap,Essentials,1.00,1.49,200,2222
 Toothpaste,Essentials,2.00,2.99,150,3333

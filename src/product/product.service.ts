@@ -44,9 +44,9 @@ export class ProductsService {
       });
 
       if (existingProduct) {
-        existingProduct.quantity += dto.quantity;
+        existingProduct.stock += dto.stock;
         existingProduct.costPrice = dto.costPrice;
-        existingProduct.sellPrice = dto.sellPrice;
+        existingProduct.sellingPrice = dto.sellingPrice;
         const updated = await existingProduct.save();
         await updated.populate('owner', 'firstName lastName');
         return new ProductResponseDto(updated);
@@ -175,16 +175,16 @@ export class ProductsService {
     }
   }
 
-  async restock(id: string, quantity: number, userId: string) {
+  async restock(id: string, stock: number, userId: string) {
     try {
-      if (quantity <= 0) throw new BadRequestException('Quantity must be > 0');
+      if (stock <= 0) throw new BadRequestException('stock must be > 0');
 
       const product = await this.productModel.findById(id);
       if (!product) throw new NotFoundException('Product not found');
       if (product.owner.toString() !== userId)
         throw new UnauthorizedException('You cannot restock this product');
 
-      product.quantity += quantity;
+      product.stock += stock;
       const updated = await product.save();
       await updated.populate('owner', 'firstName lastName');
       return new ProductResponseDto(updated);
@@ -203,7 +203,7 @@ export class ProductsService {
   async checkLowStock(): Promise<ProductResponseDto[]> {
     try {
       const lowStock = await this.productModel
-        .find({ $expr: { $lt: ['$quantity', '$alertQuantity'] } })
+        .find({ $expr: { $lt: ['$stock', '$alertstock'] } })
         .populate('owner', 'firstName lastName');
       return lowStock.map((p) => new ProductResponseDto(p));
     } catch {
@@ -222,8 +222,8 @@ export class ProductsService {
         [];
 
       for (const row of rows as any[]) {
-        const { name, category, costPrice, sellPrice, quantity, barcode } = row;
-        if (!name || !category || !costPrice || !sellPrice || !quantity)
+        const { name, category, costPrice, sellingPrice, stock, barcode } = row;
+        if (!name || !category || !costPrice || !sellingPrice || !stock)
           continue;
 
         let product = await this.productModel.findOne({
@@ -232,9 +232,9 @@ export class ProductsService {
         });
 
         if (product) {
-          product.quantity += Number(quantity);
+          product.stock += Number(stock);
           product.costPrice = Number(costPrice);
-          product.sellPrice = Number(sellPrice);
+          product.sellingPrice = Number(sellingPrice);
           await product.save();
           results.push({ action: 'restocked', barcode: product.barcode });
         } else {
@@ -242,8 +242,8 @@ export class ProductsService {
             name,
             category,
             costPrice: Number(costPrice),
-            sellPrice: Number(sellPrice),
-            quantity: Number(quantity),
+            sellingPrice: Number(sellingPrice),
+            stock: Number(stock),
             barcode: barcode || nanoid(10),
             owner: new Types.ObjectId(userId),
           });
@@ -267,8 +267,8 @@ export class ProductsService {
         name: p.name,
         category: p.category,
         costPrice: p.costPrice,
-        sellPrice: p.sellPrice,
-        quantity: p.quantity,
+        sellingPrice: p.sellingPrice,
+        stock: p.stock,
         barcode: p.barcode,
       }));
 
