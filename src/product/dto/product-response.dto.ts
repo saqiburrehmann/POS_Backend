@@ -4,6 +4,7 @@ export class ProductResponseDto {
   id: string;
   name: string;
   category: string;
+  costPrice: number;
   sellingPrice: number;
   stock: number;
   alertstock: number;
@@ -15,6 +16,7 @@ export class ProductResponseDto {
     this.id = product._id.toString();
     this.name = product.name;
     this.category = product.category;
+    this.costPrice = product.costPrice;
     this.sellingPrice = product.sellingPrice;
     this.stock = product.stock;
     this.alertstock = product.alertstock;
